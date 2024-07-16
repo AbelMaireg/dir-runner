@@ -1,7 +1,7 @@
 import colors from './colors';
 import fs from "node:fs/promises";
 
-class Item {
+export default class Item {
     tag: string;
     single: boolean;
     data: string;
@@ -67,54 +67,3 @@ class Item {
         if (!is_last) cables.splice(cables.indexOf(level), 1);
     }
 };
-
-function generateTree(): Item {
-    const root = new Item("root");
-
-    let itemCount = 1; // Start counting from the root
-
-    function addChildren(parent: Item, depth: number) {
-        if (itemCount >= 100 || depth > 4) return;
-
-        const numChildren = Math.min(10, 100 - itemCount); // Adjust to ensure at least 100 items
-
-        for (let i = 0; i < numChildren; i++) {
-            const child = new Item(`Item_${itemCount + 1}`);
-            parent.add_branch(child);
-            itemCount++;
-            addChildren(child, depth + 1);
-        }
-    }
-
-    addChildren(root, 1);
-
-    return root;
-}
-
-const tree = generateTree();
-tree.create_dir();
-
-let pub = new Item("public");
-let files = new Item("files");
-files.add_branch(new Item("tmp"));
-files.add_branch(new Item("trash"));
-let images = new Item("images");
-let profile = new Item("profile");
-profile.add_branch(new Item("admin"));
-let images_user = new Item("user");
-images_user.add_branch(new Item("abel.png", true))
-images_user.add_branch(new Item("maireg.png", true))
-images_user.add_branch(new Item("gg.png", true))
-profile.add_branch(images_user);
-let posts = new Item("posts");
-posts.add_branch(new Item("news"));
-posts.add_branch(new Item("jobs"));
-posts.add_branch(new Item("---"))
-images.add_branch(profile);
-images_user.add_branch(posts);
-pub.add_branch(files);
-pub.add_branch(images);
-pub.add_branch(new Item(".env", true, "heloo"));
-
-pub.create_dir([ "hello" ]);
-pub.traverse()
