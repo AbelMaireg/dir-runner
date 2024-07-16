@@ -1,5 +1,5 @@
 {
-  "name": "directory-parser",
+  "name": "dir-runner",
   "module": "index.ts",
   "version": "1.0.0",
   "type": "module",
