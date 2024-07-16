@@ -22,7 +22,7 @@ export default class Item {
         path.push(this.tag);
         if (this.single) {
             console.log('create_file: ', this.tag, path.join('/'));
-            Bun.write(path.join('/'), this.data);
+            fs.writeFile(path.join('/'), this.data);
         } else {
             console.log('create_dir:', this.tag, path.join('/'));
             fs.mkdir(path.join('/'), { recursive: true });
