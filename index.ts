@@ -1,4 +1,4 @@
-
+import colors from './colors';
 
 class Item {
     tag: string;
@@ -15,100 +15,91 @@ class Item {
         this.branch.push(b);
     }
 
-    doo() {
-        console.log(this.tag);
+    create_dir() {
+        if (this.single) {
+            
+        }
     }
 
-    traverse(indent: number = 0, is_last: boolean = false, shell: number = -1) {
-        let text_color = this.single ? this.colors.fg.green : this.colors.fg.blue; 
+    traverse(indent: number = 0, is_last: boolean = true, level: number = 0, cables: number[] = []) {
         if (indent == 0)
-        console.log(this.colors.fg.yellow + '. ' + this.tag + this.colors.reset);
+            console.log(colors.fg.yellow + '. ' + this.tag + colors.reset);
         else {
-            if (!is_last)
-            console.log(
-                this.colors.fg.yellow +
-                ' '.repeat(( indent - shell ) * 4) +
-                '│   '.repeat(shell) + '├──' +
-                text_color +
-                this.colors.bright +
-                this.tag +
-                this.colors.reset + 
-                " shell: " + shell
-            );
-            else 
-            console.log(
-                this.colors.fg.yellow +
-                ' '.repeat(( indent - shell ) * 4) +
-                '│   '.repeat(shell) + '└──' +
-                text_color +
-                this.colors.bright +
-                this.tag +
-                this.colors.reset +
-                " shell: " + shell
-            );
+            let text_color = this.single ? colors.fg.green : colors.fg.blue; 
+
+            let str: string = colors.fg.yellow;
+            for (let i = 0; i < level - 1; ++i) {
+                if (cables.indexOf(i) != -1) {
+                    str += "│   ";
+                } else {
+                    str += "    ";
+                }
+            }
+            if (!is_last) str += '├── '; else { str += '└── ' };
+            str += text_color + colors.bright + this.tag + colors.reset; // + "  level: " + level + "  cables: " + cables + "  is_last: " + is_last +  "  turn: " + cables.indexOf(level - 1);
+
+            console.log(str)
         }
 
-        if (is_last) shell--;
+        if (is_last) cables.splice(cables.indexOf(level - 1), 1);
 
         this.branch.forEach((_br, index) => {
             let _is_last = index == this.branch.length - 1;
-            let _is_first = index == 0;
 
-            if (_is_first) shell++;
+            cables.push(level)
 
-            _br.traverse(indent + 1, _is_last, shell);
+            _br.traverse(indent + 1, _is_last, level + 1, cables);
 
         })
-    };
 
-    readonly colors = {
-        reset: "\x1b[0m",
-        bright: "\x1b[1m",
-        dim: "\x1b[2m",
-        underscore: "\x1b[4m",
-        blink: "\x1b[5m",
-        reverse: "\x1b[7m",
-        hidden: "\x1b[8m",
-
-        fg: {
-            black: "\x1b[30m",
-            red: "\x1b[31m",
-            green: "\x1b[32m",
-            yellow: "\x1b[33m",
-            blue: "\x1b[34m",
-            magenta: "\x1b[35m",
-            cyan: "\x1b[36m",
-            white: "\x1b[37m",
-        },
-        bg: {
-            black: "\x1b[40m",
-            red: "\x1b[41m",
-            green: "\x1b[42m",
-            yellow: "\x1b[43m",
-            blue: "\x1b[44m",
-            magenta: "\x1b[45m",
-            cyan: "\x1b[46m",
-            white: "\x1b[47m",
-        }
-    };
+        if (!is_last) cables.splice(cables.indexOf(level), 1);
+    }
 };
 
+function generateTree(): Item {
+    const root = new Item("root");
+
+    let itemCount = 1; // Start counting from the root
+
+    function addChildren(parent: Item, depth: number) {
+        if (itemCount >= 100 || depth > 4) return;
+
+        const numChildren = Math.min(10, 100 - itemCount); // Adjust to ensure at least 100 items
+
+        for (let i = 0; i < numChildren; i++) {
+            const child = new Item(`Item_${itemCount + 1}`);
+            parent.add_branch(child);
+            itemCount++;
+            addChildren(child, depth + 1);
+        }
+    }
+
+    addChildren(root, 1);
+
+    return root;
+}
+
+const tree = generateTree();
+tree.traverse();
+
 let pub = new Item("public");
-    let files = new Item("files");
-        files.add_branch(new Item("tmp"));
-        files.add_branch(new Item("trash"));
-    let images = new Item("images");
-        let profile = new Item("profile");
-            profile.add_branch(new Item("admin"));
-            let images_user = new Item("user");
-                images_user.add_branch(new Item("abel.png", true))
-                images_user.add_branch(new Item("maireg.png", true))
-            profile.add_branch(images_user);
-        let posts = new Item("posts");
-            posts.add_branch(new Item("news"));
-            posts.add_branch(new Item("jobs"));
-        images.add_branch(profile);
-        images.add_branch(posts);
+let files = new Item("files");
+files.add_branch(new Item("tmp"));
+files.add_branch(new Item("trash"));
+let images = new Item("images");
+let profile = new Item("profile");
+profile.add_branch(new Item("admin"));
+let images_user = new Item("user");
+images_user.add_branch(new Item("abel.png", true))
+images_user.add_branch(new Item("maireg.png", true))
+images_user.add_branch(new Item("gg.png", true))
+profile.add_branch(images_user);
+let posts = new Item("posts");
+posts.add_branch(new Item("news"));
+posts.add_branch(new Item("jobs"));
+posts.add_branch(new Item("---"))
+images.add_branch(profile);
+images_user.add_branch(posts);
 pub.add_branch(files);
 pub.add_branch(images);
 
