@@ -1,11 +1,11 @@
 import colors from './colors';
 import fs from "node:fs/promises";
 
-export default class Item {
+export default class Walker {
     tag: string;
     single: boolean;
     data: string;
-    branch: Item[] = [];
+    branch: Walker[] = [];
 
     constructor(tag: string, s: boolean = false, data: string = "") {
         this.tag = tag;
@@ -13,7 +13,7 @@ export default class Item {
         this.data = data;
     }
 
-    add_branch(b: Item): void {
+    add_branch(b: Walker): void {
         if (!this.single)
         this.branch.push(b);
     }
