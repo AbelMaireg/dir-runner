@@ -1,13 +1,16 @@
 import colors from './colors';
+import fs from "node:fs/promises";
 
 class Item {
     tag: string;
     single: boolean;
+    data: string;
     branch: Item[] = [];
 
-    constructor(tag: string, s: boolean = false) {
+    constructor(tag: string, s: boolean = false, data: string = "") {
         this.tag = tag;
         this.single = s;
+        this.data = data;
     }
 
     add_branch(b: Item): void {
@@ -15,10 +18,19 @@ class Item {
         this.branch.push(b);
     }
 
-    create_dir() {
+    async create_dir(path: string[] = []) {
+        path.push(this.tag);
         if (this.single) {
-            
+            console.log('create_file: ', this.tag, path.join('/'));
+            Bun.write(path.join('/'), this.data);
+        } else {
+            console.log('create_dir:', this.tag, path.join('/'));
+            fs.mkdir(path.join('/'), { recursive: true });
+            this.branch.forEach((_br) => {
+                _br.create_dir(path);
+            })
         }
+        path.pop();
     }
 
     traverse(indent: number = 0, is_last: boolean = true, level: number = 0, cables: number[] = []) {
@@ -36,7 +48,7 @@ class Item {
                 }
             }
             if (!is_last) str += '├── '; else { str += '└── ' };
-            str += text_color + colors.bright + this.tag + colors.reset; // + "  level: " + level + "  cables: " + cables + "  is_last: " + is_last +  "  turn: " + cables.indexOf(level - 1);
+            str += text_color + colors.bright + this.tag + colors.reset;
 
             console.log(str)
         }
@@ -80,7 +92,7 @@ function generateTree(): Item {
 }
 
 const tree = generateTree();
-tree.traverse();
+tree.create_dir();
 
 let pub = new Item("public");
 let files = new Item("files");
@@ -102,5 +114,7 @@ images.add_branch(profile);
 images_user.add_branch(posts);
 pub.add_branch(files);
 pub.add_branch(images);
+pub.add_branch(new Item(".env", true, "heloo"));
 
-pub.traverse();
+pub.create_dir([ "hello" ]);
+pub.traverse()
